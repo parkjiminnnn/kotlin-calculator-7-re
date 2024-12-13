@@ -1,34 +1,44 @@
 package calculator.domain
 
-import calculator.utils.ErrorHandler.handleNumber
-
 class Separator(private val value: String) {
     private fun isSeparator(): Boolean {
         return value.substring(0, 2) == "//"
     }
 
-    fun findCustomSeparate(): String {
+    private fun findSeparator(): String {
         if (isSeparator()) {
-            value.forEachIndexed { index, char ->
-                val number = char.digitToIntOrNull()
-                if (number != null) {
-                    return value.substring(0, index)
-                }
-            }
+            return findCustomSeparator()
         }
-        return value.replace(':', ',')
+        return ","
     }
-
 
     private fun findCustomSeparator(): String {
-        val separate = findCustomSeparate()
-        return separate.substring(2, separate.length - 2)
+        value.forEach { char ->
+            val number = char.digitToIntOrNull()
+            if (number != null) {
+                val header = findHeader()
+                return header.substring(2, header.length - 2)
+            }
+        }
+        return ""
     }
 
-    fun getNumbers(): List<Int> {
-        val customSeparator = findCustomSeparator()
-        val separate = findCustomSeparate()
-        val rawNumbers = value.substring(separate.length)
-        return rawNumbers.split(customSeparator).map { it.toInt() }.handleNumber()
+    private fun findHeader(): String {
+        value.forEachIndexed { index, char ->
+            val number = char.digitToIntOrNull()
+            if (number != null) {
+                return value.substring(0, index)
+            }
+        }
+        return ""
+    }
+
+    fun getRawNumbers(): List<String> {
+        val separator = findSeparator()
+        if (isSeparator()) {
+            return value.substring(findHeader().length).split(separator)
+
+        }
+        return value.replace(':', ',').split(separator)
     }
 }
